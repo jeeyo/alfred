@@ -2,10 +2,12 @@
   "dependencies": {
     "cac": "^6.7.14",
     "dockerode": "^3.3.5",
-    "fastify": "^4.21.0"
+    "fastify": "^4.21.0",
+    "semver": "^7.5.4"
   },
   "devDependencies": {
     "@types/dockerode": "^3.3.19",
+    "@types/semver": "^7.5.0",
     "prettier": "^3.0.1",
     "typescript": "^5.1.6"
   }

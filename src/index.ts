@@ -1,9 +1,14 @@
-import DockerClient from './dockerclient';
+import { DockerClientOptions } from './dockerclient';
+import Yarn from './managers/yarn';
 import cli from './cli';
 
 (async () => {
   const opts = cli.parse().options;
-  const socketPath = opts.socket ?? '/var/run/docker.sock';
 
-  const dockerClient = new DockerClient('hello-world:latest', [], ['/hello'], socketPath);
+  const options: DockerClientOptions = {
+    socketPath: opts.socket ?? '/var/run/docker.sock',
+  };
+
+  const yarn = new Yarn('/Users/jeeyo/Documents/GitHub/alfred', options);
+  await yarn.getTransitiveDependencies();
 })();

@@ -1,5 +1,6 @@
 import Docker from 'dockerode';
 import { Writable, WritableOptions } from 'stream';
+import { ClientRequest } from 'http';
 
 class DockerClientStdioWritableStream extends Writable {
   private buffer = '';
@@ -22,6 +23,10 @@ class DockerClientStdioWritableStream extends Writable {
   }
 }
 
+export interface DockerClientOptions {
+  socketPath?: string;
+}
+
 export default class DockerClient {
   private readonly docker: Docker;
 
@@ -33,13 +38,18 @@ export default class DockerClient {
     protected entrypoint: string[],
     protected command: string[],
     protected pwd?: string,
-    protected socketPath: string = '/var/run/docker.sock',
+    protected options?: DockerClientOptions,
   ) {
-    this.docker = new Docker({ socketPath });
+    this.docker = new Docker(options);
   }
 
   private async pull(): Promise<void> {
-    await this.docker.pull(this.image);
+    console.log(`Pulling ${this.image}...`);
+    const { socket }: { socket: ClientRequest } = await this.docker.pull(this.image);
+    await new Promise((resolve, reject) => {
+      socket.on('close', resolve);
+      socket.on('error', reject);
+    });
   }
 
   protected async run(): Promise<void> {
@@ -48,7 +58,9 @@ export default class DockerClient {
     // mount volume and set working dir if specified
     const volumeMount = this.pwd
       ? {
-          Volumes: { [this.pwd]: this.pwd },
+          HostConfig: {
+            Binds: [`${this.pwd}:${this.pwd}`],
+          },
           WorkingDir: this.pwd,
         }
       : {};
