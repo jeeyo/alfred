@@ -21,6 +21,10 @@ class DockerClientStdioWritableStream extends Writable {
   getBuffer(): string {
     return this.buffer;
   }
+
+  flush(): void {
+    this.buffer = '';
+  }
 }
 
 export interface DockerClientOptions {
@@ -38,12 +42,23 @@ export default class DockerClient {
     protected entrypoint: string[],
     protected command: string[],
     protected pwd?: string,
-    protected options?: DockerClientOptions,
+    protected env?: string[],
+    protected dockerOptions?: DockerClientOptions,
   ) {
-    this.docker = new Docker(options);
+    this.docker = new Docker(dockerOptions);
+  }
+
+  private async checkImageExists(): Promise<boolean> {
+    const images = await this.docker.listImages();
+    return images.some((image) => image.RepoTags?.includes(this.image));
   }
 
   private async pull(): Promise<void> {
+    if (await this.checkImageExists()) {
+      console.log(`Image ${this.image} already exists, skipping pull...`);
+      return;
+    }
+
     console.log(`Pulling ${this.image}...`);
     const { socket }: { socket: ClientRequest } = await this.docker.pull(this.image);
     await new Promise((resolve, reject) => {
@@ -54,6 +69,8 @@ export default class DockerClient {
 
   protected async run(): Promise<void> {
     await this.pull();
+
+    console.log(`Running ${this.image}...`);
 
     // mount volume and set working dir if specified
     const volumeMount = this.pwd
@@ -67,11 +84,12 @@ export default class DockerClient {
 
     const [_, container] = (await this.docker.run(
       this.image,
-      this.command,
+      this.command ?? [],
       [this.stdout, this.stderr],
       {
         Tty: false,
         Entrypoint: this.entrypoint,
+        Env: this.env,
         ...volumeMount,
       },
     )) as [any, Docker.Container];
@@ -85,5 +103,13 @@ export default class DockerClient {
 
   protected getStderr(): string {
     return this.stderr.getBuffer();
+  }
+
+  protected flushStdout(): void {
+    this.stdout.flush();
+  }
+
+  protected flushStderr(): void {
+    this.stderr.flush();
   }
 }

@@ -1,14 +1,14 @@
 import DockerClient, { DockerClientOptions } from '../dockerclient';
 import semver from 'semver';
 
-export default class Yarn extends DockerClient implements Manager {
+export default class Yarn extends DockerClient implements PackageManager {
   private buffer: string | null = null;
 
   constructor(
     protected pwd?: string,
-    protected options?: DockerClientOptions,
+    protected dockerOptions?: DockerClientOptions
   ) {
-    super('node:lts-alpine', ['/bin/sh', '-c'], ['yarn list --depth=1'], pwd, options);
+    super('node:lts-alpine', ['/bin/sh', '-c'], ['yarn list --depth=1'], pwd, [], dockerOptions);
   }
 
   private async runIfHavent(): Promise<void> {
@@ -45,7 +45,6 @@ export default class Yarn extends DockerClient implements Manager {
     for (const match of matches) {
       const [, , name, version] = match;
       dependencies[name] = semver.clean(version);
-      console.log(`transitive: ${name} ${version}`);
     }
 
     return dependencies;

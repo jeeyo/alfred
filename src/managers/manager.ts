@@ -1,4 +1,6 @@
-interface Manager {
+interface PackageManager {
   getDependencies(): Record<string, string> | Promise<Record<string, string>>;
-  getTransitiveDependencies(): Record<string, string | null> | Promise<Record<string, string | null>>;
+  getTransitiveDependencies():
+    | Record<string, string | null>
+    | Promise<Record<string, string | null>>;
 }
