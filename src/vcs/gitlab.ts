@@ -1,20 +1,22 @@
-import DockerClient, { DockerClientOptions } from '../dockerclient';
+import Container from '../container';
+import DockerClient from '../dockerclient';
 
-export default class GitLab extends DockerClient {
+export default class GitLab extends Container {
   private buffer: string | null = null;
   protected command: string[] = ['glab'];
 
   constructor(
+    protected docker: DockerClient,
     protected pwd?: string,
-    protected dockerOptions?: DockerClientOptions
   ) {
-    super('gitlab/glab:v1.31.0', ['/bin/sh', '-c'], ['glab'], pwd, [], dockerOptions);
+    super('gitlab/glab:v1.31.0', ['/bin/sh', '-c'], ['glab'], docker, pwd, []);
   }
 
-  // private async runIfHavent(): Promise<void> {
-  //   this.flushStdout();
-  //   this.command = ['glab', 'version'];
-  //   await this.run();
-  //   this.buffer = this.getStdout();
-  // }
+  async getVersion(): Promise<void> {
+    this.flushStdout();
+    this.command = ['glab', '-v'];
+    await this.run();
+    this.buffer = this.getStdout();
+    console.log(this.buffer.toString());
+  }
 }

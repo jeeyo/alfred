@@ -369,6 +369,11 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
+marked@^7.0.2:
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-7.0.2.tgz#7df34d9393bce63d175bcbdbe1de7b6727b3088d"
+  integrity sha512-ADEBjnCHOrsLoV7JPvUNWtELZ0b4SeIALhrfxuA9uhS3hw2PCezROoFduIqMOjeagBPto732+YC5tZHBMQRdqg==
+
 mkdirp-classic@^0.5.2:
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz#fa10c9115cc6d8865be221ba47ee9bed78601113"

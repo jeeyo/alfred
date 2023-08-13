@@ -1,14 +1,22 @@
-import DockerClient, { DockerClientOptions } from '../dockerclient';
+import Container from '../container';
 import semver from 'semver';
+import type DockerClient from '../dockerclient';
 
-export default class Yarn extends DockerClient implements PackageManager {
+export default class Yarn extends Container implements PackageManager {
   private buffer: string | null = null;
 
   constructor(
+    protected docker: DockerClient,
     protected pwd?: string,
-    protected dockerOptions?: DockerClientOptions
   ) {
-    super('node:lts-alpine', ['/bin/sh', '-c'], ['yarn list --depth=1'], pwd, [], dockerOptions);
+    super(
+      'node:lts-alpine',
+      ['/bin/sh', '-c'],
+      ['yarn list --depth=1'],
+      docker,
+      pwd,
+      [],
+    );
   }
 
   private async runIfHavent(): Promise<void> {

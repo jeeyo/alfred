@@ -1,31 +1,5 @@
 import Docker from 'dockerode';
-import { Writable, WritableOptions } from 'stream';
-import { ClientRequest } from 'http';
-
-class DockerClientStdioWritableStream extends Writable {
-  private buffer = '';
-
-  constructor(options?: WritableOptions) {
-    super(options);
-  }
-
-  _write(
-    chunk: any,
-    _encoding: BufferEncoding,
-    callback: (error?: Error | null) => void,
-  ) {
-    this.buffer += chunk.toString();
-    callback();
-  }
-
-  getBuffer(): string {
-    return this.buffer;
-  }
-
-  flush(): void {
-    this.buffer = '';
-  }
-}
+import { IncomingMessage } from 'http';
 
 export interface DockerClientOptions {
   socketPath?: string;
@@ -34,82 +8,57 @@ export interface DockerClientOptions {
 export default class DockerClient {
   private readonly docker: Docker;
 
-  private stdout: DockerClientStdioWritableStream = new DockerClientStdioWritableStream();
-  private stderr: DockerClientStdioWritableStream = new DockerClientStdioWritableStream();
-
-  constructor(
-    protected image: string,
-    protected entrypoint: string[],
-    protected command: string[],
-    protected pwd?: string,
-    protected env?: string[],
-    protected dockerOptions?: DockerClientOptions,
-  ) {
-    this.docker = new Docker(dockerOptions);
+  constructor(protected options?: DockerClientOptions) {
+    this.docker = new Docker(options);
   }
 
-  private async checkImageExists(): Promise<boolean> {
+  async listImages(): Promise<string[][]> {
     const images = await this.docker.listImages();
-    return images.some((image) => image.RepoTags?.includes(this.image));
+    return images
+      .map((image) => image.RepoTags ?? [])
+      .filter((image) => image.length > 0);
   }
 
-  private async pull(): Promise<void> {
-    if (await this.checkImageExists()) {
-      console.log(`Image ${this.image} already exists, skipping pull...`);
-      return;
-    }
-
-    console.log(`Pulling ${this.image}...`);
-    const { socket }: { socket: ClientRequest } = await this.docker.pull(this.image);
+  async pull(image: string): Promise<void> {
+    const message: IncomingMessage = await this.docker.pull(image);
     await new Promise((resolve, reject) => {
-      socket.on('close', resolve);
-      socket.on('error', reject);
+      message.on('close', () => {
+        console.log('closed');
+        resolve(true);
+      });
+      message.socket.on('close', (hadError) => hadError && reject());
     });
   }
 
-  protected async run(): Promise<void> {
-    await this.pull();
-
-    console.log(`Running ${this.image}...`);
-
+  async run(
+    image: string,
+    entrypoint: string[],
+    command: string[],
+    pwd?: string,
+    env?: string[],
+    stdout?: NodeJS.WritableStream,
+    stderr?: NodeJS.WritableStream,
+  ): Promise<void> {
     // mount volume and set working dir if specified
-    const volumeMount = this.pwd
+    const volumeMount = pwd
       ? {
           HostConfig: {
-            Binds: [`${this.pwd}:${this.pwd}`],
+            Binds: [`${pwd}:${pwd}`],
           },
-          WorkingDir: this.pwd,
+          WorkingDir: pwd,
         }
       : {};
 
-    const [_, container] = (await this.docker.run(
-      this.image,
-      this.command ?? [],
-      [this.stdout, this.stderr],
-      {
-        Tty: false,
-        Entrypoint: this.entrypoint,
-        Env: this.env,
-        ...volumeMount,
-      },
-    )) as [any, Docker.Container];
+    const tty = stdout && stderr ? true : false;
+    const streams = stdout && stderr ? [stdout, stderr] : stdout ? [stdout] : [];
+
+    const [_, container] = (await this.docker.run(image, command ?? [], streams, {
+      Tty: tty,
+      Entrypoint: entrypoint,
+      Env: env,
+      ...volumeMount,
+    })) as [any, Docker.Container];
 
     container.remove();
-  }
-
-  protected getStdout(): string {
-    return this.stdout.getBuffer();
-  }
-
-  protected getStderr(): string {
-    return this.stderr.getBuffer();
-  }
-
-  protected flushStdout(): void {
-    this.stdout.flush();
-  }
-
-  protected flushStderr(): void {
-    this.stderr.flush();
   }
 }

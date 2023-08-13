@@ -3,7 +3,6 @@ import type { FastifyPluginCallback } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 const GitLabIssueName = 'Alfred Dependency Manager';
-const GitLabIssueLabel = 'Alfred';
 
 const GitLabIssueEvent = z
   .object({
@@ -41,7 +40,6 @@ const plugin: FastifyPluginCallback = (fastify, _options, done) => {
       }
 
       // TODO: check if the issue description is already filled
-      // TODO: check if the issue has the label already
 
       reply.send(200);
     });

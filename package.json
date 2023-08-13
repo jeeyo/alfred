@@ -4,6 +4,7 @@
     "dockerode": "^3.3.5",
     "fastify": "^4.21.0",
     "fastify-type-provider-zod": "^1.1.9",
+    "marked": "^7.0.2",
     "semver": "^7.5.4",
     "zod": "^3.21.4"
   },
