@@ -9,14 +9,7 @@ export default class Yarn extends Container implements PackageManager {
     protected docker: DockerClient,
     protected pwd?: string,
   ) {
-    super(
-      'node:lts-alpine',
-      ['/bin/sh', '-c'],
-      ['yarn list --depth=1'],
-      docker,
-      pwd,
-      [],
-    );
+    super('node:lts-alpine', ['/bin/sh', '-c'], ['yarn list --depth=1'], docker, pwd, []);
   }
 
   private async runIfHavent(): Promise<void> {

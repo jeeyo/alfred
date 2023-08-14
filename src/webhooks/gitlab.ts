@@ -1,12 +1,11 @@
 import { z } from 'zod';
 import type { FastifyPluginCallback } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-
-const GitLabIssueName = 'Alfred Dependency Manager';
+import Issue from '../issue';
 
 const GitLabIssueEvent = z
   .object({
-    object_kind: z.string(),
+    object_kind: z.literal('issue'),
     object_attributes: z.object({
       id: z.number(),
       title: z.string(),
@@ -29,12 +28,12 @@ const plugin: FastifyPluginCallback = (fastify, _options, done) => {
   fastify
     .withTypeProvider<ZodTypeProvider>()
     .get('/gitlab', { schema: { body: GitLabIssueEvent } }, async ({ body }, reply) => {
-      // only care about issues that are opened with the specific title
-      if (
-        body.object_kind !== 'issue' ||
-        body.object_attributes.title !== GitLabIssueName ||
-        body.object_attributes.state === 'closed'
-      ) {
+      const title = body.object_attributes.title;
+      const description = body.object_attributes.description;
+      const state = body.object_attributes.state === 'closed' ? 'closed' : 'opened';
+
+      const issue = Issue.from(title, description, state);
+      if (!issue) {
         reply.send(200);
         return;
       }
