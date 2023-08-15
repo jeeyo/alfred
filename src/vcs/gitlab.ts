@@ -16,7 +16,7 @@ export default class GitLab extends Container {
     this.flushStdout();
     this.command = ['glab', '-v'];
     await this.run();
-    this.buffer = this.getStdout();
-    console.log(this.buffer.toString());
+    this.buffer = this.getStdout().toString();
+    console.log(this.buffer);
   }
 }

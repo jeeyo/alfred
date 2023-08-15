@@ -12,10 +12,30 @@ export default class Issue {
       return null;
     }
 
-    return new Issue();
+    return new Issue(title, description, state);
   }
 
-  static parse(content: string): string {
-    return marked.parse(content);
+  private lexed: marked.TokensList | null = null;
+
+  private constructor(
+    private readonly title: string,
+    private readonly description: string,
+    private readonly state: 'opened' | 'closed',
+  ) {
+    this.lexed = marked.lexer(description);
+  }
+
+  getWorkspaces(): string[] {
+    if (!this.lexed) {
+      return [];
+    }
+
+    return (
+      this.lexed
+        .filter((l): l is marked.Tokens.Heading => l.type === 'heading')
+        .filter((l) => l.depth === 3)
+        // .filter((l) => fs.existsSync(l.text))  // TODO: verify that the path exists
+        .map((l) => l.text) ?? []
+    );
   }
 }

@@ -1,22 +1,27 @@
 import DockerClient, { DockerClientOptions } from './dockerclient';
 import Yarn from './managers/yarn';
-import cli from './cli';
-import GitLab from './vcs/gitlab';
+import Dotnet7 from './managers/dotnet7';
+import config from './config';
 
 (async () => {
-  const opts = cli.parse().options;
-
   const options: DockerClientOptions = {
-    socketPath: opts.socket,
+    socketPath: config.dockerSocketFilePath,
   };
   const docker = new DockerClient(options);
 
-  const yarn = new Yarn(docker, '/Users/jeeyo/Documents/GitHub/alfred');
-  // const dependencies = await yarn.getDependencies();
-  // const transitiveDependencies = await yarn.getTransitiveDependencies();
+  const dotnet = new Dotnet7(
+    docker,
+    '/Users/nnuntanirund/AgodaGit/revenue-management/src/Agoda.Availability.WebApi',
+  );
+  const dependencies = await dotnet.getDependencies();
+  console.log('dotnet7', dependencies);
+  // const transitiveDependencies = await dotnet.getTransitiveDependencies();
 
-  const glab = new GitLab(docker, '/Users/jeeyo/Documents/GitHub/alfred');
-  await glab.getVersion();
+  // const yarn = new Yarn(docker, '/Users/nnuntanirund/AgodaGit/jscpd');
+  // console.log('yarn', await yarn.getDependencies());
+
+  // const glab = new GitLab(docker, '/Users/nnuntanirund/Documents/GitHub/alfred');
+  // await glab.getVersion();
 
   // try {
   //   fastify.listen({

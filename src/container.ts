@@ -1,38 +1,12 @@
-import { Writable, WritableOptions } from 'stream';
 import DockerClient from './dockerclient';
-
-class ContainerStdioWritableStream extends Writable {
-  private buffer = '';
-
-  constructor(options?: WritableOptions) {
-    super(options);
-  }
-
-  _write(
-    chunk: any,
-    _encoding: BufferEncoding,
-    callback: (error?: Error | null) => void,
-  ) {
-    this.buffer += chunk.toString();
-    callback();
-  }
-
-  getBuffer(): string {
-    return this.buffer;
-  }
-
-  flush(): void {
-    this.buffer = '';
-  }
-}
 
 export interface ContainerOptions {
   client?: DockerClient;
 }
 
 export default class Container {
-  private stdout: ContainerStdioWritableStream = new ContainerStdioWritableStream();
-  private stderr: ContainerStdioWritableStream = new ContainerStdioWritableStream();
+  private stdout: Buffer = Buffer.alloc(0);
+  private stderr: Buffer = Buffer.alloc(0);
 
   constructor(
     protected image: string,
@@ -62,30 +36,28 @@ export default class Container {
     await this.pull();
 
     console.log(`Running ${this.image}...`);
-    await this.docker.run(
+    [this.stdout, this.stderr] = await this.docker.run(
       this.image,
       this.entrypoint,
       this.command,
       this.pwd,
       this.env,
-      this.stdout,
-      this.stderr,
     );
   }
 
-  protected getStdout(): string {
-    return this.stdout.getBuffer();
+  protected getStdout(): Buffer {
+    return this.stdout;
   }
 
-  protected getStderr(): string {
-    return this.stderr.getBuffer();
+  protected getStderr(): Buffer {
+    return this.stderr;
   }
 
   protected flushStdout(): void {
-    this.stdout.flush();
+    this.stdout = Buffer.alloc(0);
   }
 
   protected flushStderr(): void {
-    this.stderr.flush();
+    this.stderr = Buffer.alloc(0);
   }
 }

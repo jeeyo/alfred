@@ -2,18 +2,25 @@ import Container from '../container';
 import semver from 'semver';
 import type DockerClient from '../dockerclient';
 
-export default class Yarn extends Container implements PackageManager {
+export default class Dotnet7 extends Container implements PackageManager {
   private buffer: string | null = null;
 
   constructor(
     protected docker: DockerClient,
     protected pwd?: string,
   ) {
-    super('node:lts-alpine', ['/bin/sh', '-c'], ['yarn list --depth=1'], docker, pwd, []);
+    super(
+      'mcr.microsoft.com/dotnet/sdk:7.0-alpine',
+      ['/bin/sh', '-c'],
+      ['dotnet list package --include-transitive'],
+      docker,
+      pwd,
+      [],
+    );
   }
 
   getName() {
-    return 'yarn';
+    return 'dotnet7';
   }
 
   private async runIfHavent(): Promise<void> {
@@ -23,17 +30,18 @@ export default class Yarn extends Container implements PackageManager {
 
     await this.run();
     this.buffer = this.getStdout().toString();
+    console.log('buffer', this.buffer);
   }
 
   async getDependencies(): Promise<Record<string, string>> {
     await this.runIfHavent();
 
-    const re = new RegExp(/─ (@?.*?)@(.*?)$/gm);
+    const re = new RegExp(/> ([\w|\.]+)\s+([\w|\d|\.|-]+)\s+([\w|\d|\.|-]+)/gm);
     const matches = this.buffer!.matchAll(re);
 
     const dependencies: Record<string, string> = {};
     for (const match of matches) {
-      const [, name, version] = match;
+      const [, name, _, version] = match;
       dependencies[name] = version;
     }
 

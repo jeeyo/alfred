@@ -22,10 +22,7 @@ export default class DockerClient {
   async pull(image: string): Promise<void> {
     const message: IncomingMessage = await this.docker.pull(image);
     await new Promise((resolve, reject) => {
-      message.on('close', () => {
-        console.log('closed');
-        resolve(true);
-      });
+      message.on('close', () => resolve(true));
       message.socket.on('close', (hadError) => hadError && reject());
     });
   }
@@ -36,9 +33,7 @@ export default class DockerClient {
     command: string[],
     pwd?: string,
     env?: string[],
-    stdout?: NodeJS.WritableStream,
-    stderr?: NodeJS.WritableStream,
-  ): Promise<void> {
+  ): Promise<[Buffer, Buffer]> {
     // mount volume and set working dir if specified
     const volumeMount = pwd
       ? {
@@ -49,16 +44,17 @@ export default class DockerClient {
         }
       : {};
 
-    const tty = stdout && stderr ? true : false;
-    const streams = stdout && stderr ? [stdout, stderr] : stdout ? [stdout] : [];
-
-    const [_, container] = (await this.docker.run(image, command ?? [], streams, {
-      Tty: tty,
+    const [_, container] = (await this.docker.run(image, command ?? [], [], {
       Entrypoint: entrypoint,
       Env: env,
       ...volumeMount,
     })) as [any, Docker.Container];
 
+    const stdout = await container.logs({ follow: false, stdout: true, stderr: false });
+    const stderr = await container.logs({ follow: false, stdout: false, stderr: true });
+
     container.remove();
+
+    return [stdout, stderr];
   }
 }
