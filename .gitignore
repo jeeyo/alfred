@@ -1,0 +1,26 @@
+# Node/TypeScript
+node_modules/
+.dist/
+dist/
+.vscode/
+.idea/
+.DS_Store
+.env
+.env.local
+coverage/
+.tmp/
+*.log
+.npmrc
+
+# Build artifacts
+*.tsbuildinfo
+
+# Reports
+reports/
+
+# Cache
+.eslintcache
+.vite/
+
+# Python src snapshot (cloned reference)
+_ace_open_src/
