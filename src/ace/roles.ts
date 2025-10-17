@@ -66,7 +66,7 @@ export class Generator {
       } catch (err) {
         lastError = err as Error;
         if (attempt + 1 >= this.maxRetries) break;
-        prompt = basePrompt + '\n\n务必仅输出单个有效 JSON 对象，请转义所有引号或改用单引号，避免输出额外文本。';
+        prompt = basePrompt + '\n\nYou MUST respond with a single valid JSON object without extra text.';
       }
     }
     throw new Error('Generator failed to produce valid JSON.' + (lastError ? ` ${lastError.message}` : ''));
@@ -163,7 +163,7 @@ export class Reflector {
         } catch (err) {
           lastError = err as Error;
           if (attempt + 1 >= this.maxRetries) break;
-          prompt = basePrompt + '\n\n请严格输出有效 JSON，对双引号进行转义，不要输出额外解释性文本。';
+          prompt = basePrompt + '\n\nYou MUST respond with a single valid JSON object without extra text.';
         }
       }
     }
@@ -210,7 +210,7 @@ export class Curator {
       } catch (err) {
         lastError = err as Error;
         if (attempt + 1 >= this.maxRetries) break;
-        prompt = basePrompt + '\n\n提醒：仅输出有效 JSON，所有字符串请转义双引号或改用单引号，不要添加额外文本。';
+        prompt = basePrompt + '\n\nYou MUST respond with a single valid JSON object without extra text.';
       }
     }
     throw new Error('Curator failed to produce valid JSON.' + (lastError ? ` ${lastError.message}` : ''));

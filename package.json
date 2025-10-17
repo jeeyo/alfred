@@ -1,14 +1,17 @@
 {
-  "name": "alfred-ace-open",
+  "name": "alfred",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file=.env --import=tsx src/alfred.js",
     "test": "vitest run"
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "@types/node": "^24.8.1",
+    "tsx": "^4.20.6",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "openai": "^6.4.0"
   }
 }

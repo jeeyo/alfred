@@ -1,4 +1,4 @@
-import { Curator, Generator, Reflector, ReflectorOutput, GeneratorOutput, CuratorOutput } from './roles';
+import { Curator, Generator, Reflector, type ReflectorOutput, type GeneratorOutput, type CuratorOutput } from './roles';
 import { Playbook } from './playbook';
 
 export interface Sample {

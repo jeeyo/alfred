@@ -1,3 +1,5 @@
+import OpenAI from 'openai';
+
 export interface LLMResponse {
   text: string;
   raw?: Record<string, unknown>;
@@ -35,32 +37,33 @@ export interface TransformersInitOptions {
   topP?: number;
 }
 
-export class TransformersLLMClient extends LLMClient {
-  private systemPrompt: string;
-  private defaults: Record<string, unknown>;
+export class OpenAILLMClient extends LLMClient {
+  private _llm: OpenAI;
+  private _systemPrompt: string;
 
-  constructor(modelPath: string, opts: TransformersInitOptions = {}) {
-    super(modelPath);
-    this.systemPrompt =
-      opts.systemPrompt ??
+  constructor(model: string, opts: OpenAI.Responses.ResponseCreateParamsNonStreaming = {}) {
+    super(model);
+
+    this._systemPrompt =
+      opts.instructions ??
       'You are a JSON-only assistant that MUST reply with a single valid JSON object without extra text.\nReasoning: low\nDo not expose analysis or chain-of-thought. Respond using the final JSON only.';
-    this.defaults = {
-      max_new_tokens: opts.maxNewTokens ?? 512,
-      temperature: opts.temperature ?? 0.0,
-      top_p: opts.topP ?? 0.9,
-      return_full_text: false,
-    };
+
+    this._llm = new OpenAI();
   }
 
-  // Placeholder: In Node.js environment, hook up to an LLM provider if needed.
   async complete(prompt: string, kwargs: Record<string, unknown> = {}): Promise<LLMResponse> {
-    const _call = { ...this.defaults, ...kwargs };
-    const messages = [
-      { role: 'system', content: this.systemPrompt },
-      { role: 'user', content: prompt },
-    ];
-    // This client is a stub; it echoes back prompt content wrapped as JSON when possible.
-    const text = JSON.stringify({ messagesLength: messages.length, note: 'Transformers client stub in TS.' });
-    return { text, raw: { messages } };
+    const response = await this._llm.responses.create({
+      model: this.model,
+      instructions: this._systemPrompt,
+      input: prompt,
+      text: {
+        format: {
+          type: 'json_object',
+        },
+      },
+    });
+
+    console.log('response', response.output_text);
+    return { text: response.output_text };
   }
 }
