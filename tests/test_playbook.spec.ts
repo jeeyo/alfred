@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { Playbook } from '../ace/playbook';
-import { DeltaBatch, DeltaOperation } from '../ace/delta';
+import { Playbook } from '../src/ace/playbook';
+import { DeltaBatch, DeltaOperation } from '../src/ace/delta';
 
 describe('Playbook', () => {
   it('CRUD operations and stats/asPrompt work', () => {

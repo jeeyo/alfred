@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { DummyLLMClient } from '../ace/llm';
-import { Generator, Reflector, Curator } from '../ace/roles';
-import { Playbook } from '../ace/playbook';
+import { DummyLLMClient } from '../src/ace/llm';
+import { Generator, Reflector, Curator } from '../src/ace/roles';
+import { Playbook } from '../src/ace/playbook';
 
 function queueJson(client: DummyLLMClient, obj: unknown) {
   client.queue(JSON.stringify(obj));

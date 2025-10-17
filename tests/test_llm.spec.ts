@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DummyLLMClient, TransformersLLMClient } from '../ace/llm';
+import { DummyLLMClient, TransformersLLMClient } from '../src/ace/llm';
 
 describe('LLM clients', () => {
   it('DummyLLMClient throws when queue is empty', async () => {
