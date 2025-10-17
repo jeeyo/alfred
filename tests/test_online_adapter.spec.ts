@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { DummyLLMClient } from '../ace/llm';
-import { Generator, Reflector, Curator } from '../ace/roles';
-import { Playbook } from '../ace/playbook';
-import { OnlineAdapter, Sample } from '../ace/adaptation';
+import { DummyLLMClient } from '../src/ace/llm';
+import { Generator, Reflector, Curator } from '../src/ace/roles';
+import { Playbook } from '../src/ace/playbook';
+import { OnlineAdapter, Sample } from '../src/ace/adaptation';
 
 class SimpleEnv {
   evaluate(sample: Sample, genOut: { final_answer: string }) {

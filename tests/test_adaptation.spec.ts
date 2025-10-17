@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { DummyLLMClient } from '../ace/llm';
-import { Generator, Reflector, Curator } from '../ace/roles';
-import { OfflineAdapter } from '../ace/adaptation';
-import { Playbook } from '../ace/playbook';
+import { DummyLLMClient } from '../src/ace/llm';
+import { Generator, Reflector, Curator } from '../src/ace/roles';
+import { OfflineAdapter } from '../src/ace/adaptation';
+import { Playbook } from '../src/ace/playbook';
 
 interface Sample { question: string; ground_truth?: string | null }
 interface EnvironmentResult { feedback: string; ground_truth?: string | null; metrics: Record<string, number> }

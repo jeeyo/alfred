@@ -11,6 +11,6 @@
     "resolveJsonModule": true,
     "declaration": true
   },
-  "include": ["ace/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
+  "include": ["src/ace/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "_ace_open_src", "ace-open", "ace-open-ts"]
 }
