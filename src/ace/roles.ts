@@ -1,5 +1,5 @@
 import { DeltaBatch } from './delta';
-import { LLMClient } from './llm';
+import { LLMClient, CompletionOptions } from './llm';
 import { Playbook } from './playbook';
 import { CURATOR_PROMPT, GENERATOR_PROMPT, REFLECTOR_PROMPT } from './prompts';
 
@@ -43,7 +43,7 @@ export class Generator {
     context?: string | null;
     playbook: Playbook;
     reflection?: string | null;
-    kwargs?: Record<string, unknown>;
+    options?: CompletionOptions;
   }): Promise<GeneratorOutput> {
     const basePrompt = this.promptTemplate
       .replace('{playbook}', params.playbook.asPrompt() || '(empty playbook)')
@@ -54,7 +54,7 @@ export class Generator {
     let prompt = basePrompt;
     let lastError: Error | undefined;
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
-      const response = await this.llm.complete(prompt, params.kwargs);
+      const response = await this.llm.complete(prompt, params.options);
       try {
         const data = safeJsonParse(response.text);
         const reasoning = String(data['reasoning'] ?? '');
@@ -117,7 +117,7 @@ export class Reflector {
     ground_truth?: string | null;
     feedback?: string | null;
     max_refinement_rounds?: number;
-    kwargs?: Record<string, unknown>;
+    options?: CompletionOptions;
   }): Promise<ReflectorOutput> {
     const excerpt = this.makePlaybookExcerpt(params.playbook, params.generator_output.bullet_ids);
     const basePrompt = this.promptTemplate
@@ -136,7 +136,7 @@ export class Reflector {
     for (let round = 0; round < rounds; round++) {
       prompt = basePrompt;
       for (let attempt = 0; attempt < this.maxRetries; attempt++) {
-        const response = await this.llm.complete(prompt, { ...(params.kwargs || {}), refinement_round: round });
+        const response = await this.llm.complete(prompt, { ...(params.options || {}), refinement_round: round });
         try {
           const data = safeJsonParse(response.text);
           const tagsPayload = data['bullet_tags'];
@@ -190,7 +190,7 @@ export class Curator {
     playbook: Playbook;
     question_context: string;
     progress: string;
-    kwargs?: Record<string, unknown>;
+    options?: CompletionOptions;
   }): Promise<CuratorOutput> {
     const basePrompt = this.promptTemplate
       .replace('{progress}', params.progress)
@@ -202,7 +202,7 @@ export class Curator {
     let prompt = basePrompt;
     let lastError: Error | undefined;
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
-      const response = await this.llm.complete(prompt, params.kwargs);
+      const response = await this.llm.complete(prompt, params.options);
       try {
         const data = safeJsonParse(response.text);
         const delta = DeltaBatch.fromJSON(data);

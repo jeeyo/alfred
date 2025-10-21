@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DummyLLMClient, TransformersLLMClient } from '../src/ace/llm';
+import { DummyLLMClient } from '../src/ace/llm';
 
 describe('LLM clients', () => {
   it('DummyLLMClient throws when queue is empty', async () => {
@@ -7,9 +7,11 @@ describe('LLM clients', () => {
     await expect(client.complete('prompt')).rejects.toThrow(/ran out of queued responses/i);
   });
 
-  it('TransformersLLMClient stub returns JSON text', async () => {
-    const client = new TransformersLLMClient('dummy-model');
+  it('DummyLLMClient returns queued responses', async () => {
+    const client = new DummyLLMClient();
+    client.queue('{"test": "response"}');
     const res = await client.complete('hello');
+    expect(res.text).toBe('{"test": "response"}');
     expect(() => JSON.parse(res.text)).not.toThrow();
   });
 });
